@@ -13,6 +13,8 @@
 
 package jdbchelper;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import javax.sql.ConnectionEvent;
 import javax.sql.ConnectionEventListener;
 import javax.sql.ConnectionPoolDataSource;
@@ -24,7 +26,7 @@ import java.util.Iterator;
 import java.util.Queue;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
+
 
 /**
  * A simple standalone JDBC connection pool manager.
@@ -55,7 +57,7 @@ public final class ConnectionPool {
    private PoolConnectionEventListener poolConnectionEventListener;
    private boolean isDisposed;
 
-   Logger logger = Logger.getLogger(ConnectionPool.class.getName());
+   Logger logger = LoggerFactory.getLogger(ConnectionPool.class);
 
    static class Con {
       final PooledConnection pooledCon;
@@ -236,7 +238,7 @@ public final class ConnectionPool {
          pconn.close();
       }
       catch (SQLException e) {
-         logger.warning("Error while closing database connection: " + e.toString());
+         logger.warn("Error while closing database connection", e);
       }
    }
 

@@ -33,7 +33,7 @@ public class QueryResult {
             stmt = jdbc.fillStatement(con.prepareStatement(sql), params);
          }
       } catch (SQLException e) {
-         JdbcHelper.logger.warning("Error running query:\n" + sql + "\n\nError: " + e.getMessage());
+         JdbcHelper.logger.warn("Error running query:\n" + sql, e);
          throw new JdbcException("Error running query:\n" + sql + "\n\nError: " + e.getMessage(), e);
       }
    }
@@ -77,7 +77,7 @@ public class QueryResult {
          queried = true;
 
       } catch (SQLException e) {
-         JdbcHelper.logger.warning("Error running query:\n" + sql + "\n\nError: " + e.getMessage());
+         JdbcHelper.logger.warn("Error running query:\n" + sql, e);
          throw new JdbcException("Error running query:\n" + sql + "\n\nError: " + e.getMessage(), e);
       }
    }

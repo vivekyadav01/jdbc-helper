@@ -1,20 +1,25 @@
 package jdbchelper;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.DriverManager;
 import java.io.PrintWriter;
-import java.util.logging.Logger;
 
 /**
- * Author: Erdinc YILMAZEL
- * Date: Dec 25, 2008
- * Time: 12:37:30 AM
+ * This is a simplest implementation of a java.sql.DataSource interface.
+ * It is highly recommended to use another datasource implementation from your
+ * database or application server vendor instead of this one.
+ *
+ * This class is only a small utility.
+ *
+ * @author Erdinc YILMAZEL
  */
 public class SimpleDataSource implements DataSource {
 
-   Logger logger = Logger.getLogger(SimpleDataSource.class.getName());
+   Logger logger = LoggerFactory.getLogger(SimpleDataSource.class);
 
    public SimpleDataSource(String driverClassName, String url, String username, String password) {
       this.url = url;
@@ -24,7 +29,7 @@ public class SimpleDataSource implements DataSource {
       try {
          Class.forName(driverClassName.trim());
       } catch (ClassNotFoundException e) {
-         logger.warning("Could not load JDBC Driver class " + driverClassName);
+         logger.warn("Could not load JDBC Driver class " + driverClassName, e);
       }
    }
 

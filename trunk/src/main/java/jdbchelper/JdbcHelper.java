@@ -1,5 +1,7 @@
 package jdbchelper;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import javax.sql.DataSource;
 import java.io.InputStream;
 import java.io.Reader;
@@ -9,17 +11,28 @@ import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Logger;
 
 /**
- * Author: Erdinc YILMAZEL
- * Date: Dec 25, 2008
- * Time: 12:36:52 AM
+ * JdbcHelper is a wrapper around JDBC API for performing common tasks such as insert, or
+ * select operations.
+ *
+ * To create a JdbcHelper, you need a {@link javax.sql.DataSource} instance. In a J2EE
+ * environment this is generally provided by your application server if you defined a
+ * connection pool. The datasource instance can be looked up from the JNDI registery
+ * or it may be injected to your application classes by the app server.
+ *
+ * Some Jdbc driver vendors also provide implementations of DataSource such as mysql's
+ * MysqlDataSource and MysqlConnectionPoolDataSource.
+ *
+ * After creating a JdbcHelper, you can call it's methods for your db operations. JdbcHelper
+ * is a threadsafe class, so there is no risk in sharing the same instance with other threads.
+ *
+ * @author Erdinc Yilmazel
  */
 public class JdbcHelper {
    DataSource dataSource;
 
-   static Logger logger = Logger.getLogger("jdbchelper");
+   static Logger logger = LoggerFactory.getLogger(JdbcHelper.class);
 
    public JdbcHelper(DataSource dataSource) {
       this.dataSource = dataSource;
@@ -123,7 +136,7 @@ public class JdbcHelper {
 
          transactions.put(current, transaction);
       } catch (SQLException e) {
-         logger.warning("Error beginning transaction: " + e.getMessage());
+         logger.warn("Error beginning transaction", e);
          e.printStackTrace();
       }
    }
@@ -141,7 +154,7 @@ public class JdbcHelper {
 
          transactions.put(current, transaction);
       } catch (SQLException e) {
-         logger.warning("Error holding connection: " + e.getMessage());
+         logger.warn("Error holding connection", e);
          e.printStackTrace();
       }
    }
@@ -161,7 +174,7 @@ public class JdbcHelper {
             try {
                transaction.connection.commit();
             } catch (SQLException e) {
-               logger.warning("Error commiting transaction: " + e.getMessage());
+               logger.warn("Error commiting transaction", e);
                e.printStackTrace();
             }
          }
@@ -182,7 +195,7 @@ public class JdbcHelper {
          try {
             transaction.connection.commit();
          } catch (SQLException e) {
-            logger.warning("Error commiting transaction: " + e.getMessage());
+            logger.warn("Error commiting transaction", e);
             e.printStackTrace();
          }
 
@@ -202,7 +215,7 @@ public class JdbcHelper {
          try {
             transaction.connection.rollback();
          } catch (SQLException e) {
-            logger.warning("Error rolling back transaction: " + e.getMessage());
+            logger.warn("Error rolling back transaction", e);
             e.printStackTrace();
          }
 
@@ -282,7 +295,7 @@ public class JdbcHelper {
 
 
       } catch (SQLException e) {
-         logger.warning("Error running query:\n" + sql + "\n\nError: " + e.getMessage());
+         logger.warn("Error running query:\n" + sql, e);
          throw new JdbcException("Error running query:\n" + sql + "\n\nError: " + e.getMessage(), e);
       } finally {
          JdbcUtil.close(stmt, result);
@@ -783,7 +796,7 @@ public class JdbcHelper {
             return ((PreparedStatement) stmt).executeUpdate();
          }
       } catch (SQLException e) {
-         logger.warning("Error executing query:\n" + sql + "\n\nError: " + e.getMessage());
+         logger.warn("Error executing query:\n" + sql, e);
          throw new JdbcException("Error executing query:\n" + sql + "\n\nError: " + e.getMessage(), e);
       } finally {
          JdbcUtil.close(stmt);
@@ -812,7 +825,7 @@ public class JdbcHelper {
             return result;
          }
       } catch (SQLException e) {
-         logger.warning("Error executing query:\n" + sql + "\n\nError: " + e.getMessage());
+         logger.warn("Error executing query:\n" + sql, e);
          throw new JdbcException("Error executing query:\n" + sql + "\n\nError: " + e.getMessage(), e);
       } finally {
          JdbcUtil.close(stmt);
@@ -830,7 +843,7 @@ public class JdbcHelper {
          mapper.mapStatement(stmt, bean);
          return stmt.executeUpdate();
       } catch (SQLException e) {
-         logger.warning("Error executing query:\n" + sql + "\n\nError: " + e.getMessage());
+         logger.warn("Error executing query:\n" + sql, e);
          throw new JdbcException("Error executing query:\n" + sql + "\n\nError: " + e.getMessage(), e);
       } finally {
          JdbcUtil.close(stmt);
@@ -852,7 +865,7 @@ public class JdbcHelper {
          con.setCatalog(currentCatalog);
          return result;
       } catch (SQLException e) {
-         logger.warning("Error executing query:\n" + sql + "\n\nError: " + e.getMessage());
+         logger.warn("Error executing query:\n" + sql, e);
          throw new JdbcException("Error executing query:\n" + sql + "\n\nError: " + e.getMessage(), e);
       } finally {
          JdbcUtil.close(stmt);
@@ -875,7 +888,7 @@ public class JdbcHelper {
             ((PreparedStatement) stmt).execute();
          }
       } catch (SQLException e) {
-         logger.warning("Error executing query:\n" + sql + "\n\nError: " + e.getMessage());
+         logger.warn("Error executing query:\n" + sql, e);
          throw new JdbcException("Error executing query:\n" + sql + "\n\nError: " + e.getMessage(), e);
       } finally {
          JdbcUtil.close(stmt);
@@ -902,7 +915,7 @@ public class JdbcHelper {
          }
          return stmt.executeBatch();
       } catch (SQLException e) {
-         logger.warning("Error executing query:\n" + sql + "\n\nError: " + e.getMessage());
+         logger.warn("Error executing query:\n" + sql, e);
          throw new JdbcException("Error executing query:\n" + sql + "\n\nError: " + e.getMessage(), e);
       } finally {
          JdbcUtil.close(stmt);
@@ -926,7 +939,7 @@ public class JdbcHelper {
          }
          return stmt.executeBatch();
       } catch (SQLException e) {
-         logger.warning("Error executing query:\n" + sql + "\n\nError: " + e.getMessage());
+         logger.warn("Error executing query:\n" + sql, e);
          throw new JdbcException("Error executing query:\n" + sql + "\n\nError: " + e.getMessage(), e);
       } finally {
          JdbcUtil.close(stmt);

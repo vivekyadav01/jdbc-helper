@@ -1,3 +1,0 @@
-#summary Getting started with JdbcHelper
-
-= Introduction =

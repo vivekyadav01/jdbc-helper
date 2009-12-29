@@ -19,7 +19,7 @@ public class ExecutableStatement {
          con = jdbc.getConnection();
          stmt = con.prepareStatement(sql);
       } catch (SQLException e) {
-         JdbcHelper.logger.warning("Error running query:\n" + sql + "\n\nError: " + e.getMessage());
+         JdbcHelper.logger.warn("Error running query:\n" + sql, e);
          throw new JdbcException("Error running query:\n" + sql + "\n\nError: " + e.getMessage(), e);
       }
    }

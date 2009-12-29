@@ -22,7 +22,7 @@ public class ExtendedJdbcHelper extends JdbcHelper {
          con = getConnection();
          return con.getMetaData();
       } catch (SQLException e) {
-         logger.warning("Error getting database meta data\n\nError: " + e.getMessage());
+         logger.warn("Error getting database meta data", e);
          throw new JdbcException("Error getting database meta data", e);
       } finally {
          freeConnection(con);

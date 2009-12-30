@@ -4,7 +4,7 @@
 
 JdbcHelper ships a slightly modified version of MiniConnectionPoolManager created by Christian d'Heureuse. http://www.source-code.biz/snippets/java/8.htm.
 
-This MiniConnectionPoolManager class is in JdbcHelper source tree named as jdbchelper.ConnectionPool. You can use this class to make a pool of database connections to increase your application performance without a dependency to an external connection pooling library such as C3P0 or Commons DBCP
+MiniConnectionPoolManager class is in JdbcHelper source tree and named as jdbchelper.ConnectionPool. You can use this class to make a pool of database connections to increase your application performance without a dependency to an external connection pooling library such as C3P0 or Commons DBCP
 
 = Example Usage =
 

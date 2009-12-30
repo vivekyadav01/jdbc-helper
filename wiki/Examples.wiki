@@ -28,5 +28,88 @@ JdbcHelper class holds a reference to the dataSource implementation and manages 
 JdbcHelper class is thread safe. That means you can share the same JdbcHelper instance with many different threads.
 
 =Running Queries=
+You can use JdbcHelper to run queries with a single line of code. You can select simple values, create Java objects from resultsets, create list of objects etc. In the examples below we will use a simple java class named User.
+
+{{{
+public class User {
+   int userId;
+   String userName;
+   String email;
+
+   public static BeanCreator<User> beanCreator = new BeanCreator<User>() {
+       public User createBean(ResultSet rs) throws SQLException {
+           User u = new User();
+           u.userId = rs.getInt("user_id");
+           u.userName = rs.getString("user_name");
+           u.email = rs.getString("email");
+       }
+   };
+
+   public static StatementMapper<User> statementMapper = new StatementMapper<User>() {
+       public void mapStatement(PreparedStatement stmt, User u) throws SQLException {
+          stmt.setInt(1, u.userId);
+          stmt.setString(2, u.userName);
+          stmt.setString(3, u.email);
+       }
+   };
+}
+}}}
+
+==Querying a simple Object==
+{{{
+User user = jdbc.queryForObject("select * from users where user_id = ?", User.beanCreator, 100);
+}}}
+
+==Querying a list of Objects==
+{{{
+List<User> users = jdbc.queryForList("select * from users", User.beanCreator);
+}}}
+
+==Querying with a custom ResultSetHandler==
+{{{
+// Process each user record with a ResultSetHandler which has a fetch size of 100
+jdbc.query("select * from users", new ResultSetHandler(100) {
+    public void processRow(ResultSet rs) throws SQLException {
+         // do something with the resultset
+    }
+});
+}}}
+
+Alternatively you can use a ResultSetBeanHandler
+{{{
+jdbc.query("select * from users", new ResultsetBeanHandler<User>(User.beanCreator) {
+    public void processBean(User u) {
+         // do something with the User object
+    }
+});
+}}}
+
+==Querying simple values==
+{{{
+String userName = jdbc.queryForString("select user_name from users where user_id = ?", 100);
+}}}
+
+{{{
+int userId = jdbc.queryForInt("select user_id from users where user_name = ?", test);
+}}}
+
+{{{
+Tuple<Integer, String> t = jdbc.queryForTuple("select user_id, user_name from users where email = ?", new IntegerBeanCreator(1), new StringBeanCreator(2), "test@test.com");
+
+int userId = t.getFirst();
+String userName = t.getSecond();
+}}}
+
+==Custom iteration over ResultSet==
+{{{
+QueryResult result = jdbc.query("select * from users");
+result.setFetchSize(100);
+while(result.next()) {
+   int userId = result.getInt("user_id");
+   String userName = result.getString("user_name");
+}
+result.close();
+}}}
+
 =Executing Statements=
 =Transactions=

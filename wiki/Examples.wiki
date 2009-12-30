@@ -85,14 +85,18 @@ jdbc.query("select * from users", new ResultsetBeanHandler<User>(User.beanCreato
 }}}
 
 ==Querying simple values==
+
+There are many methods in JdbcHelper for selecting single rows from the database.
+
+===Query for string===
 {{{
 String userName = jdbc.queryForString("select user_name from users where user_id = ?", 100);
 }}}
-
+===Query for int===
 {{{
 int userId = jdbc.queryForInt("select user_id from users where user_name = ?", test);
 }}}
-
+===Query for tuple===
 {{{
 Tuple<Integer, String> t = jdbc.queryForTuple("select user_id, user_name from users where email = ?", new IntegerBeanCreator(1), new StringBeanCreator(2), "test@test.com");
 
@@ -112,4 +116,44 @@ result.close();
 }}}
 
 =Executing Statements=
+==Executing a simple statement==
+{{{
+int rows = jdbc.execute("delete from users where user_id < ?", 1000);
+}}}
+
+==Inserting a mapped java object==
+{{{
+User user = new User();
+user.userId = 100;
+user.userName = "erdinc";
+user.email = "test@example.com";
+jdbc.execute("insert into users (user_id, user_name, email) values (?, ?, ?)", user, User.statementMapper);
+}}}
+
+==Batch Statements==
+===Using an anonymous BatchFeeder===
+{{{
+List<User> users = getUsers();
+final Iterator<User> iter = users.iterator();
+jdbc.executeBatch("insert into users (user_id, user_name, email) values (?, ?, ?)", new BatchFeeder() {
+    public boolean hasNext() {
+       return iter.hasNext();
+    }
+
+    public boolean feedStatement(PreparedStatement stmt) throws SQLException {
+         User u = iter.next();
+         stmt.setInt(1, u.userId);
+         stmt.setString(2, u.userName);
+         stmt.setEmail(3, u.email);
+         return true;
+    }
+});
+}}}
+
+The example code above inserts all the elements in the users list using a batch insert. Although it is a good example of writing a BatchFeeder, it is still lots of coding for this type of a work. The example below is the same exact code with much fewer lines of code:
+
+{{{
+List<User> users = getUsers();
+jdbc.executeBatch("insert into users (user_id, user_name, email) values (?, ?, ?)", new MappingBatchFeeder<User>(users.iterator(), User.beanCreator));
+}}}
 =Transactions=

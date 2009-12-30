@@ -1,9 +1,11 @@
 package jdbchelper;
 
 /**
- * Author: Erdinc YILMAZEL
- * Date: Mar 5, 2009
- * Time: 7:49:40 PM
+ * If you want the objects that are created by JdbcHelper using a {@link jdbchelper.BeanCreator} to hold a
+ * reference to the JdbcHelper object that created them, you can make that type of objects to implement
+ * this interface.
+ *
+ *
  */
 public interface JdbcAware {
    public void setJdbcHelper(JdbcHelper jdbc);

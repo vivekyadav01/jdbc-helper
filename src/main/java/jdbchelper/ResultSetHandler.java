@@ -4,15 +4,26 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
- * Author: Erdinc YILMAZEL
- * Date: Dec 25, 2008
- * Time: 1:04:47 AM
+ * A ResultSet handler may be implemented as a business logic that iterates over a
+ * Jdbc ResultSet object.
  */
 public abstract class ResultSetHandler {
+
+   /**
+    * Creates a ResultSetHandler with default fetchsize, maxRows and timeOut
+    * parameters of the underlying Jdbc driver
+    */
    public ResultSetHandler() {
 
    }
 
+   /**
+    * Creates a new ResultSetHandler with the specified resultset fetch size.
+    * The fetch size parameter is important for selecting a large amount of rows
+    * from the database. If not set, you may see OutOfMemory errors.
+    *
+    * @param fetchSize ResultSet fetch size
+    */
    public ResultSetHandler(int fetchSize) {
       this.fetchSize = fetchSize;
    }

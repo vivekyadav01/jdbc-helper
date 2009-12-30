@@ -21,8 +21,9 @@ public abstract class IteratorBatchFeeder<T> implements BatchFeeder {
    }
 
    @Override
-   public void feedStatement(PreparedStatement stmt) throws SQLException {
+   public boolean feedStatement(PreparedStatement stmt) throws SQLException {
       feedStatement(stmt, iterator.next());
+      return true;
    }
 
    public abstract void feedStatement(PreparedStatement stmt, T object) throws SQLException;

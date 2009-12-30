@@ -156,4 +156,42 @@ The example code above inserts all the elements in the users list using a batch 
 List<User> users = getUsers();
 jdbc.executeBatch("insert into users (user_id, user_name, email) values (?, ?, ?)", new MappingBatchFeeder<User>(users.iterator(), User.beanCreator));
 }}}
+
+=Using the same Connection on consecutive API calls=
+By default JdbcHelper closes the connection that it uses after each call to its API. (This generally returns the connection to the connection pool to be reused.) Sometimes you may need to use the same physical connection to the database in consecutive queries or statements that are run. This is especially needed in running transactions.
+There are two methods for holding and releasing a reference to the connection object in JdbcHelper which are `holdConnection()` and `releaseConnection()` methods.
+
+If you are not using a connection pool, opening and closing connections may take a long time and using the same connection in consecutive db operations becomes a must.
+
+Consider the following example:
+{{{
+jdbc.holdConnection();
+jdbc.query("...");
+jdbc.execute("...");
+jdbc.releaseConnection();
+}}}
+
+In the example above, JdbcHelper binds the Connection instance that it pulled from the data source to the thread that is currently using that JdbcHelper instance. Untill the user calls the releaseConnection method, jdbchelper keeps the connection open and uses it for all the db operations. Holding a connection does not make the operations transactional. By default all the db calls are automatically commited.
+
+Holding the connection is also needed if you want to get db generated primary key values from the database such as the auto_increment key values from a MySQL database. There is a custom method for this is JdbcHelper:
+
+{{{
+jdbc.holdConnection();
+jdbc.execute("insert into users (user_name, email) values (?, ?)", "erdinc", "test@example.com");
+int userId = (int) jdbc.getLastInsertId();
+jdbc.releaseConnection();
+}}}
+
+To query the auto_increment value from the mysql database, you have to use the same connection in which you inserted the value to the database.
 =Transactions=
+Transaction behavior in JdbcHelper is very similar to holding the connections in the previous section with one difference. Beginning a transaction set the auto commit flag on the connection to false. 
+{{{
+jdbc.beginTransaction();
+try {
+int balance = jdbc.queryForInt("select balance from accounts where accountId = ? for update", 3242);
+jdbc.execute("update accounts set balance = ? where accountId = ?", balance + 100, 3242);
+jdbc.commitTransaction();
+} catch(JdbcException e) {
+   jdbc.rollbackTransaction();
+}
+}}}

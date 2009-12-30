@@ -1,0 +1,32 @@
+#summary Examples using JdbcHelper
+
+=Introduction=
+JdbcHelper has a simple API which consists of only a few number of classes and interfaces. The main class that you will be using is the jdbchelper.JdbcHelper class. This class is well documented using javadocs, so checking that documentation for each method of the class is a good idea.
+
+=Creating a JdbcHelper Instance=
+
+JdbcHelper class has a single constructor which accepts a javax.sql.DataSource implementation. A DataSource instance can be created in several ways. 
+ * It can be obtained from your application server by making a JNDI lookup or by asking the appserver to inject it in one of your classes
+ * You may create an instance of your Database vendors implementations such as `com.mysql.jdbc.jdbc2.optional.MysqlDataSource` or `oracle.jdbc.pool.OracleDataSource`
+ * You can use `jdbchelper.SimpleDataSource` class
+ * You write your own implementation :)
+
+An example of a JNDI lookup for an Oracle DataSource in an application server environment is as follows:
+
+{{{
+javax.naming.InitialContext ic               = new javax.naming.InitialContext();
+oracle.jdbc.pool.OracleDataSource dataSource = (oracle.jdbc.pool.OracleDataSource)ic.lookup("jdbc/pool/OracleDS");
+}}}
+
+Once you have an instance of DataSource, than you can create a JdbcHelper:
+{{{
+JdbcHelper jdbc = new JdbcHelper(dataSource);
+}}}
+
+JdbcHelper class holds a reference to the dataSource implementation and manages getting a connection from the datasource or closing it when needed for you.
+
+JdbcHelper class is thread safe. That means you can share the same JdbcHelper instance with many different threads.
+
+=Running Queries=
+=Executing Statements=
+=Transactions=

@@ -188,9 +188,9 @@ Transaction behavior in JdbcHelper is very similar to holding the connections in
 {{{
 jdbc.beginTransaction();
 try {
-int balance = jdbc.queryForInt("select balance from accounts where accountId = ? for update", 3242);
-jdbc.execute("update accounts set balance = ? where accountId = ?", balance + 100, 3242);
-jdbc.commitTransaction();
+    int balance = jdbc.queryForInt("select balance from accounts where accountId = ? for update", 3242);
+    jdbc.execute("update accounts set balance = ? where accountId = ?", balance + 100, 3242);
+    jdbc.commitTransaction();
 } catch(JdbcException e) {
    jdbc.rollbackTransaction();
 }

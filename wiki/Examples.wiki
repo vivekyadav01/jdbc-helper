@@ -42,6 +42,7 @@ public class User {
            u.userId = rs.getInt("user_id");
            u.userName = rs.getString("user_name");
            u.email = rs.getString("email");
+           return u;
        }
    };
 

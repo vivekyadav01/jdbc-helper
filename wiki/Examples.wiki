@@ -151,7 +151,7 @@ jdbc.executeBatch("insert into users (user_id, user_name, email) values (?, ?, ?
 });
 }}}
 
-The example code above inserts all the elements in the users list using a batch insert. Although it is a good example of writing a BatchFeeder, it is still lots of coding for this type of a work. The example below is the same exact code with much fewer lines of code:
+The example code above inserts all the elements in the users list using a batch insert. Although it is a good example of writing a BatchFeeder, it is still lots of coding for this type of a work. The example below has the same exact bahaviour with much fewer lines of code:
 
 {{{
 List<User> users = getUsers();

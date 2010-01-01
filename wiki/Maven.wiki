@@ -1,0 +1,41 @@
+#summary Using JdbcHelper in maven
+
+= Introduction =
+
+A request has been made for JdbcHelper version 0.3 to be included in the central maven repository, until then you have to install JdbcHelper to your local maven repository.
+
+=Installing JdbcHelper to your local maven repository=
+
+First you need to checkout the version 0.3 source code:
+{{{
+svn checkout http://jdbc-helper.googlecode.com/svn/tags/0.3/ jdbc-helper-0.3
+}}}
+
+Then change to the jdbc-helper-0.3 directory and type:
+{{{
+mvn clean source:jar javadoc:jar install
+}}}
+
+This will install the version 0.3 to your local maven repository along with the sources and the javadoc.
+
+=Depending on JdbcHelper=
+You can add a dependency to the library by adding the following xml to the `<dependencies>` section of your pom.xml file:
+
+{{{
+<dependency>
+    <groupId>jdbc-helper</groupId>
+    <artifactId>jdbc-helper</artifactId>
+    <version>0.3</version>
+</dependency>
+}}}
+
+You should also depend on the corresponding SLF4J package based which logging framework that you are using.
+
+For instance:
+{{{
+<dependency>
+    <groupId>org.slf4j</groupId>
+     <artifactId>slf4j-simple</artifactId>
+     <version>1.5.8</version>
+</dependency>
+}}}

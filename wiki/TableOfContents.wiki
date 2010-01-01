@@ -1,5 +1,5 @@
  * [GettingStarted Getting started with JdbcHelper]
  * [Examples]
- * [ConnectionPooling]
- * [LoadBalancingDataSource]
+ * [ConnectionPooling Built-in connection pooling]
+ * [LoadBalancingDataSource Load balancing read-only data-sources]
  * [Maven Using JdbcHelper with Maven]

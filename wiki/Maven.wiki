@@ -16,7 +16,7 @@ Then change to the jdbc-helper-0.3 directory and type:
 mvn clean source:jar javadoc:jar install
 }}}
 
-This will install the version 0.3 to your local maven repository along with the sources and the javadoc.
+This will install the version 0.3 to your local maven repository along with the sources and the javadocs.
 
 =Depending on JdbcHelper=
 You can add a dependency to the library by adding the following xml to the `<dependencies>` section of your pom.xml file:
@@ -29,7 +29,7 @@ You can add a dependency to the library by adding the following xml to the `<dep
 </dependency>
 }}}
 
-You should also depend on the corresponding SLF4J package based which logging framework that you are using.
+You should also depend on the corresponding SLF4J package based which logging framework you are using.
 
 For instance:
 {{{

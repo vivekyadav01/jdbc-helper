@@ -5,7 +5,32 @@
    <groupId>jdbc-helper</groupId>
    <artifactId>jdbc-helper</artifactId>
    <version>0.3</version>
+   <packaging>jar</packaging>
+   <description>JdbcHelper is a small and lightweight library for handling common jdbc operations with a simple API</description>
+   <url>http://jdbc-helper.googlecode.com</url>
+   <licenses>
+      <license>
+         <name>The Apache Software License, Version 2.0</name>
+         <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+         <distribution>repo</distribution>
+      </license>
+   </licenses>
+   <developers>
+      <developer>
+         <name>Erdinc YILMAZEL</name>
+         <url>http://www.erdincyilmazel.com</url>
+      </developer>
+   </developers>
+   <scm>
+      <url>https://jdbc-helper.googlecode.com/svn/trunk/</url>
+   </scm>
    <dependencies>
+      <dependency>
+         <groupId>org.slf4j</groupId>
+         <artifactId>slf4j-api</artifactId>
+         <version>1.5.8</version>
+         <scope>compile</scope>
+      </dependency>
       <dependency>
          <groupId>junit</groupId>
          <artifactId>junit</artifactId>
@@ -17,11 +42,6 @@
          <artifactId>mysql-connector-java</artifactId>
          <version>5.1.10</version>
          <scope>test</scope>
-      </dependency>
-      <dependency>
-         <groupId>org.slf4j</groupId>
-         <artifactId>slf4j-api</artifactId>
-         <version>1.5.8</version>
       </dependency>
       <dependency>
          <groupId>org.slf4j</groupId>

@@ -34,6 +34,7 @@ public class LoadBalancingDataSourceTest {
       }
 
       lbDs.removeDataSource("first");
+      
 
       for(int i = 0; i < 10; i++) {
          assertEquals(1, jdbc.queryForInt("select 1"));

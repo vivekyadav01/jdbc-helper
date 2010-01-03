@@ -184,7 +184,7 @@ public class JdbcHelper {
          transactions.put(current, transaction);
       } catch (SQLException e) {
          logger.warn("Error beginning transaction", e);
-         e.printStackTrace();
+         throw new JdbcException(e);
       }
    }
 
@@ -213,7 +213,7 @@ public class JdbcHelper {
          transactions.put(current, transaction);
       } catch (SQLException e) {
          logger.warn("Error holding connection", e);
-         e.printStackTrace();
+         throw new JdbcException(e);
       }
    }
 
@@ -236,13 +236,15 @@ public class JdbcHelper {
                transaction.connection.commit();
             } catch (SQLException e) {
                logger.warn("Error commiting transaction", e);
-               e.printStackTrace();
+               throw new JdbcException(e);
+            } finally {
+               JdbcUtil.close(transaction.connection);
+               transactions.remove(current);
             }
+         } else {
+            JdbcUtil.close(transaction.connection);
+            transactions.remove(current);
          }
-
-         JdbcUtil.close(transaction.connection);
-
-         transactions.remove(current);
       }
    }
 
@@ -261,12 +263,11 @@ public class JdbcHelper {
             transaction.connection.commit();
          } catch (SQLException e) {
             logger.warn("Error commiting transaction", e);
-            e.printStackTrace();
+            throw new JdbcException(e);
+         } finally {
+            JdbcUtil.close(transaction.connection);
+            transactions.remove(current);
          }
-
-         JdbcUtil.close(transaction.connection);
-
-         transactions.remove(current);
       }
    }
 
@@ -286,12 +287,11 @@ public class JdbcHelper {
             transaction.connection.rollback();
          } catch (SQLException e) {
             logger.warn("Error rolling back transaction", e);
-            e.printStackTrace();
+            throw new JdbcException(e);
+         } finally {
+            JdbcUtil.close(transaction.connection);
+            transactions.remove(current);
          }
-
-         JdbcUtil.close(transaction.connection);
-
-         transactions.remove(current);
       }
    }
 
@@ -318,11 +318,7 @@ public class JdbcHelper {
       if (transaction == null) {
          throw new RuntimeException("There isn't a current transaction");
       } else {
-         try {
-            return queryForLong("SELECT last_insert_id();");
-         } catch (NoResultException e) {
-            return 0;
-         }
+         return queryForLong("SELECT last_insert_id();");
       }
    }
 
@@ -813,7 +809,7 @@ public class JdbcHelper {
       }
    }
 
-   public <X, Y, Z, W> Quadruple<X, Y, Z, W> queryForTriple(String sql,
+   public <X, Y, Z, W> Quadruple<X, Y, Z, W> queryForQuadruple(String sql,
                                            final BeanCreator<X> xCreator,
                                            final BeanCreator<Y> yCreator,
                                            final BeanCreator<Z> zCreator,
@@ -847,7 +843,7 @@ public class JdbcHelper {
       }
    }
 
-   public <X, Y, Z, W, Q> Pentuple<X, Y, Z, W, Q> queryForTriple(String sql,
+   public <X, Y, Z, W, Q> Pentuple<X, Y, Z, W, Q> queryForPentuple(String sql,
                                            final BeanCreator<X> xCreator,
                                            final BeanCreator<Y> yCreator,
                                            final BeanCreator<Z> zCreator,

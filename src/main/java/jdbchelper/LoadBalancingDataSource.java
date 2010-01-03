@@ -71,7 +71,6 @@ public class LoadBalancingDataSource implements DataSource {
 
    Random random = new Random();
 
-   @Override
    public Connection getConnection() throws SQLException {
       Exception latestCause = null;
       for(int i = 0; i < 3 && connectionPools.size() != 0; i++) {
@@ -81,7 +80,6 @@ public class LoadBalancingDataSource implements DataSource {
             return p.pool.getConnection();
          } catch (IndexOutOfBoundsException e) {
             latestCause = e;
-            e.printStackTrace();
          } catch (SQLException e) {
             if(p != null) {
                p.pool.dispose();
@@ -100,14 +98,12 @@ public class LoadBalancingDataSource implements DataSource {
       }
    }
 
-   @Override
    public Connection getConnection(String username, String password) throws SQLException {
       return getConnection();
    }
 
    public Runnable getMaintenanceJob() {
       return new Runnable() {
-         @Override
          public void run() {
             checkInvalidPools();
             for(Pool p : connectionPools) {
@@ -157,7 +153,6 @@ public class LoadBalancingDataSource implements DataSource {
 
    PrintWriter logWriter;
 
-   @Override
    public PrintWriter getLogWriter() throws SQLException {
       if (logWriter == null) {
          logWriter = new PrintWriter(System.out);
@@ -166,27 +161,22 @@ public class LoadBalancingDataSource implements DataSource {
       return logWriter;
    }
 
-   @Override
    public void setLogWriter(PrintWriter out) throws SQLException {
       logWriter = out;
    }
 
-   @Override
    public void setLoginTimeout(int seconds) throws SQLException {
       //
    }
 
-   @Override
    public int getLoginTimeout() throws SQLException {
       return 0;
    }
 
-   @Override
    public <T> T unwrap(Class<T> iface) throws SQLException {
       return null;
    }
 
-   @Override
    public boolean isWrapperFor(Class<?> iface) throws SQLException {
       return false;
    }

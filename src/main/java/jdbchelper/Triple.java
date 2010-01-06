@@ -1,5 +1,7 @@
 package jdbchelper;
 
+import java.util.Iterator;
+
 /**
  * Author: Erdinc YILMAZEL
  * Date: Mar 12, 2009
@@ -34,5 +36,24 @@ public class Triple<X, Y, Z> extends Tuple<X, Y> {
       int result = super.hashCode();
       result = 31 * result + (z != null ? z.hashCode() : 0);
       return result;
+   }
+
+   @Override
+   public Object get(int index) {
+      switch(index) {
+         case 0:
+            return x;
+         case 1:
+            return y;
+         case 2:
+            return z;
+         default:
+            throw new IndexOutOfBoundsException("Undefined index " + index + " for a Triple");
+      }
+   }
+
+   @Override
+   public int size() {
+      return 3;
    }
 }

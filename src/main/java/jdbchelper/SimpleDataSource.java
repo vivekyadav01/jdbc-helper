@@ -1,7 +1,5 @@
 package jdbchelper;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -19,8 +17,6 @@ import java.io.PrintWriter;
  */
 public class SimpleDataSource implements DataSource {
 
-   Logger logger = LoggerFactory.getLogger(SimpleDataSource.class);
-
    public SimpleDataSource(String driverClassName, String url, String username, String password) {
       this.url = url;
       this.username = username;
@@ -29,7 +25,7 @@ public class SimpleDataSource implements DataSource {
       try {
          Class.forName(driverClassName.trim());
       } catch (ClassNotFoundException e) {
-         logger.warn("Could not load JDBC Driver class " + driverClassName, e);
+         throw new JdbcException("Could not load JDBC Driver class " + driverClassName, e);
       }
    }
 

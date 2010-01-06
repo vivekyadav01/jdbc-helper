@@ -13,8 +13,6 @@
 
 package jdbchelper;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import javax.sql.ConnectionEvent;
 import javax.sql.ConnectionEventListener;
 import javax.sql.ConnectionPoolDataSource;
@@ -56,8 +54,6 @@ public final class ConnectionPool {
    private int activeConnections;
    private PoolConnectionEventListener poolConnectionEventListener;
    private boolean isDisposed;
-
-   Logger logger = LoggerFactory.getLogger(ConnectionPool.class);
 
    static class Con {
       final PooledConnection pooledCon;
@@ -238,7 +234,7 @@ public final class ConnectionPool {
          pconn.close();
       }
       catch (SQLException e) {
-         logger.warn("Error while closing database connection", e);
+         //
       }
    }
 

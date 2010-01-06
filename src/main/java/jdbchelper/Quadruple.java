@@ -35,4 +35,25 @@ public class Quadruple<X, Y, Z, W> extends Triple<X, Y, Z> {
       result = 31 * result + (w != null ? w.hashCode() : 0);
       return result;
    }
+
+   @Override
+   public Object get(int index) {
+      switch(index) {
+         case 0:
+            return x;
+         case 1:
+            return y;
+         case 2:
+            return z;
+         case 3:
+            return w;
+         default:
+            throw new IndexOutOfBoundsException("Undefined index " + index + " for a Quadruple");
+      }
+   }
+
+   @Override
+   public int size() {
+      return 4;
+   }
 }

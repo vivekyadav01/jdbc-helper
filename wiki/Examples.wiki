@@ -166,10 +166,13 @@ If you are not using a connection pool, opening and closing connections may take
 
 Consider the following example:
 {{{
-jdbc.holdConnection();
-jdbc.query("...");
-jdbc.execute("...");
-jdbc.releaseConnection();
+try {
+   jdbc.holdConnection();
+   jdbc.query("...");
+   jdbc.execute("...");
+} finally {
+   jdbc.releaseConnection();
+}
 }}}
 
 In the example above, JdbcHelper binds the Connection instance that it pulled from the data source to the thread that is currently using that JdbcHelper instance. Untill the user calls the releaseConnection method, jdbchelper keeps the connection open and uses it for all the db operations. Holding a connection does not make the operations transactional. By default all the db calls are automatically commited.
@@ -177,10 +180,13 @@ In the example above, JdbcHelper binds the Connection instance that it pulled fr
 Holding the connection is also needed if you want to get db generated primary key values from the database such as the auto_increment key values from a MySQL database. There is a custom method for this is JdbcHelper:
 
 {{{
-jdbc.holdConnection();
-jdbc.execute("insert into users (user_name, email) values (?, ?)", "erdinc", "test@example.com");
-int userId = (int) jdbc.getLastInsertId();
-jdbc.releaseConnection();
+try {
+   jdbc.holdConnection();
+   jdbc.execute("insert into users (user_name, email) values (?, ?)", "erdinc", "test@example.com");
+   int userId = (int) jdbc.getLastInsertId();
+} finally {
+   jdbc.releaseConnection();
+}
 }}}
 
 To query the auto_increment value from the mysql database, you have to use the same connection in which you inserted the value to the database.

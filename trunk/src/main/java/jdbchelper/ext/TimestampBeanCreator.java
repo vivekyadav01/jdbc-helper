@@ -22,7 +22,6 @@ public class TimestampBeanCreator implements BeanCreator<Timestamp> {
       index = 1;
    }
 
-   @Override
    public Timestamp createBean(ResultSet rs) throws SQLException {
       return rs.getTimestamp(index);
    }

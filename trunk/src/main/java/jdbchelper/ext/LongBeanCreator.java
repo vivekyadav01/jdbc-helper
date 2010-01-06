@@ -21,7 +21,6 @@ public class LongBeanCreator implements BeanCreator<Long> {
       index = 1;
    }
 
-   @Override
    public Long createBean(ResultSet rs) throws SQLException {
       return rs.getLong(index);
    }

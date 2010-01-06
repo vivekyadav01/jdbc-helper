@@ -15,12 +15,10 @@ public abstract class IteratorBatchFeeder<T> implements BatchFeeder {
       iterator = i;
    }
 
-   @Override
    public boolean hasNext() {
       return iterator.hasNext();
    }
 
-   @Override
    public boolean feedStatement(PreparedStatement stmt) throws SQLException {
       feedStatement(stmt, iterator.next());
       return true;

@@ -21,7 +21,6 @@ public class DoubleBeanCreator implements BeanCreator<Double> {
       index = 1;
    }
 
-   @Override
    public Double createBean(ResultSet rs) throws SQLException {
       return rs.getDouble(index);
    }

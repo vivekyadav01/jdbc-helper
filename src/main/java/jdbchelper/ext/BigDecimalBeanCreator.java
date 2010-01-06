@@ -22,7 +22,6 @@ public class BigDecimalBeanCreator implements BeanCreator<BigDecimal> {
       index = 1;
    }
 
-   @Override
    public BigDecimal createBean(ResultSet rs) throws SQLException {
       return rs.getBigDecimal(index);
    }

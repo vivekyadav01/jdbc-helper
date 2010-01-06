@@ -21,7 +21,6 @@ public class IntegerBeanCreator implements BeanCreator<Integer> {
       this.index = index;
    }
 
-   @Override
    public Integer createBean(ResultSet rs) throws SQLException {
       return rs.getInt(index);
    }

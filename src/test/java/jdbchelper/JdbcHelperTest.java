@@ -74,8 +74,6 @@ public class JdbcHelperTest {
    public void testQueryForTuple() {
       Tuple<Bean, Bean> t = jdbc.queryForTuple("select t1.*, t2.* from jdbctest t1 left join jdbctest t2 on t1.jkey = t2.jkey where t1.id = 1 and t1.id <> t2.id",
          new BeanCreator<Bean>() {
-
-            @Override
             public Bean createBean(ResultSet rs) throws SQLException {
                Bean b = new Bean();
                b.id = rs.getInt("t1.id");
@@ -85,8 +83,6 @@ public class JdbcHelperTest {
          },
 
          new BeanCreator<Bean>() {
-
-            @Override
             public Bean createBean(ResultSet rs) throws SQLException {
                Bean b = new Bean();
                b.id = rs.getInt("t2.id");

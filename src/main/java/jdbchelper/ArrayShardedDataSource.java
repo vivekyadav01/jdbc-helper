@@ -11,17 +11,14 @@ import javax.sql.DataSource;
 public class ArrayShardedDataSource implements ShardedDataSource {
    protected LoadBalancingDataSource[] dataSources;
 
-   @Override
    public DataSource getDataSource(int shardNo) {
       return dataSources[shardNo];
    }
 
-   @Override
    public int getShardCount() {
       return dataSources.length;
    }
 
-   @Override
    public void runMaintenanceJob() {
       for (LoadBalancingDataSource dataSource : dataSources) {
          dataSource.getMaintenanceJob().run();

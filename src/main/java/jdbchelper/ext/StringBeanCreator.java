@@ -21,7 +21,6 @@ public class StringBeanCreator implements BeanCreator<String> {
       index = 1;
    }
 
-   @Override
    public String createBean(ResultSet rs) throws SQLException {
       return rs.getString(index);
    }

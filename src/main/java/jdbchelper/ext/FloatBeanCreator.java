@@ -21,7 +21,6 @@ public class FloatBeanCreator implements BeanCreator<Float> {
       index = 1;
    }
 
-   @Override
    public Float createBean(ResultSet rs) throws SQLException {
       return rs.getFloat(index);
    }

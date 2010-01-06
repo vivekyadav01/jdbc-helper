@@ -22,7 +22,6 @@ public class DateBeanCreator implements BeanCreator<Date> {
       index = 1;
    }
 
-   @Override
    public Date createBean(ResultSet rs) throws SQLException {
       return rs.getDate(index);
    }

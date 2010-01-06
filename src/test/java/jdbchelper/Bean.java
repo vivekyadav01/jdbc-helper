@@ -25,7 +25,6 @@ class Bean {
    public static StatementMapper<Bean> getStatementMapper() {
       if (statementMapper == null) {
          statementMapper = new StatementMapper<Bean>() {
-            @Override
             public void mapStatement(PreparedStatement stmt, Bean object) throws SQLException {
                stmt.setString(1, object.name);
                stmt.setTimestamp(2, object.creationDate);
@@ -44,7 +43,6 @@ class Bean {
    public static BeanCreator<Bean> getResultSetMapper() {
       if (beanCreator == null) {
          beanCreator = new BeanCreator<Bean>() {
-            @Override
             public Bean createBean(ResultSet rs) throws SQLException {
                Bean bean = new Bean();
                bean.id = rs.getInt("jdbctest.id");

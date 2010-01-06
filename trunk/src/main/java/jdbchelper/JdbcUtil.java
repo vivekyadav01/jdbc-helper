@@ -1,8 +1,5 @@
 package jdbchelper;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -14,8 +11,6 @@ import java.sql.ResultSet;
  * Time: 12:29:19 AM
  */
 public class JdbcUtil {
-
-   static Logger logger = LoggerFactory.getLogger(JdbcHelper.class);
 
    public static void close(Statement stmt, ResultSet rs) {
       close(stmt);
@@ -33,11 +28,10 @@ public class JdbcUtil {
 				con.close();
 			}
 			catch (SQLException ex) {
-				logger.warn("Could not close JDBC Connection");
+            //
 			}
 			catch (Throwable ex) {
-				// We don't trust the JDBC driver: It might throw RuntimeException or Error.
-				logger.warn("Unexpected exception on closing JDBC Connection", ex);
+            //
 			}
 		}
 	}
@@ -53,11 +47,10 @@ public class JdbcUtil {
 				stmt.close();
 			}
 			catch (SQLException ex) {
-				logger.warn("Could not close JDBC Statement");
+				//
 			}
 			catch (Throwable ex) {
-				// We don't trust the JDBC driver: It might throw RuntimeException or Error.
-				logger.warn("Unexpected exception on closing JDBC Statement", ex);
+            //
 			}
 		}
 	}
@@ -73,11 +66,10 @@ public class JdbcUtil {
 				rs.close();
 			}
 			catch (SQLException ex) {
-				logger.warn("Could not close JDBC ResultSet");
+				//
 			}
 			catch (Throwable ex) {
-				// We don't trust the JDBC driver: It might throw RuntimeException or Error.
-				logger.warn("Unexpected exception on closing JDBC ResultSet", ex);
+				//
 			}
 		}
 	}

@@ -35,4 +35,27 @@ public class Pentuple<X, Y, Z, W, Q> extends Quadruple<X, Y, Z, W> {
       result = 31 * result + (q != null ? q.hashCode() : 0);
       return result;
    }
+
+   @Override
+   public Object get(int index) {
+      switch(index) {
+         case 0:
+            return x;
+         case 1:
+            return y;
+         case 2:
+            return z;
+         case 3:
+            return w;
+         case 4:
+            return q;
+         default:
+            throw new IndexOutOfBoundsException("Undefined index " + index + " for a Pentuple");
+      }
+   }
+
+   @Override
+   public int size() {
+      return 5;
+   }
 }

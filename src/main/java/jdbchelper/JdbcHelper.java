@@ -36,6 +36,7 @@ public class JdbcHelper {
     */
    public JdbcHelper(DataSource dataSource) {
       this.dataSource = dataSource;
+      currentTransaction = new ThreadLocal<Transaction>();
    }
 
    /**
@@ -62,8 +63,7 @@ public class JdbcHelper {
     * @see #freeConnection(java.sql.Connection)
     */
    public Connection getConnection() throws SQLException {
-      Thread current = Thread.currentThread();
-      Transaction transaction = transactions.get(current);
+      Transaction transaction = currentTransaction.get();
 
       if (transaction == null) {
          return dataSource.getConnection();
@@ -115,7 +115,7 @@ public class JdbcHelper {
       }
    }
 
-   private Map<Thread, Transaction> transactions = new java.util.concurrent.ConcurrentHashMap<Thread, Transaction>();
+   private ThreadLocal<Transaction> currentTransaction;
 
    private static class Transaction {
       Connection connection;
@@ -136,7 +136,7 @@ public class JdbcHelper {
     * @return Returns true if a connection is bound to the current thread
     */
    public boolean isConnectionHeld() {
-      return transactions.containsKey(Thread.currentThread());
+      return currentTransaction.get() != null;
    }
 
    /**
@@ -146,7 +146,7 @@ public class JdbcHelper {
     * @see #isConnectionHeld()
     */
    public boolean isInTransaction() {
-      Transaction transaction = transactions.get(Thread.currentThread());
+      Transaction transaction = currentTransaction.get();
       return transaction != null && !transaction.autoCommit;
    }
 
@@ -164,8 +164,7 @@ public class JdbcHelper {
     * @see #releaseConnection()
     */
    public void beginTransaction() {
-      Thread current = Thread.currentThread();
-      Transaction transaction = transactions.get(current);
+      Transaction transaction = currentTransaction.get();
 
       try {
          if (transaction == null) {
@@ -177,7 +176,7 @@ public class JdbcHelper {
 
          transaction.hold++;
 
-         transactions.put(current, transaction);
+         currentTransaction.set(transaction);
       } catch (SQLException e) {
          throw new JdbcException(e);
       }
@@ -195,8 +194,7 @@ public class JdbcHelper {
     * @see #releaseConnection()
     */
    public void holdConnection() {
-      Thread current = Thread.currentThread();
-      Transaction transaction = transactions.get(current);
+      Transaction transaction = currentTransaction.get();
 
       try {
          if (transaction == null) {
@@ -205,7 +203,7 @@ public class JdbcHelper {
 
          transaction.hold++;
 
-         transactions.put(current, transaction);
+         currentTransaction.set(transaction);
       } catch (SQLException e) {
          throw new JdbcException(e);
       }
@@ -215,8 +213,7 @@ public class JdbcHelper {
     * Removes the binding between the current thread and the underlying connection.
     */
    public void releaseConnection() {
-      Thread current = Thread.currentThread();
-      Transaction transaction = transactions.get(current);
+      Transaction transaction = currentTransaction.get();
       if (transaction == null) {
          throw new RuntimeException("There isn't a current connection to release");
       }
@@ -232,11 +229,11 @@ public class JdbcHelper {
                throw new JdbcException(e);
             } finally {
                JdbcUtil.close(transaction.connection);
-               transactions.remove(current);
+               currentTransaction.remove();
             }
          } else {
             JdbcUtil.close(transaction.connection);
-            transactions.remove(current);
+            currentTransaction.remove();
          }
       }
    }
@@ -246,8 +243,7 @@ public class JdbcHelper {
     * connection
     */
    public void commitTransaction() {
-      Thread current = Thread.currentThread();
-      Transaction transaction = transactions.get(current);
+      Transaction transaction = currentTransaction.get();
 
       if (transaction == null || transaction.autoCommit) {
          throw new RuntimeException("There isn't a current transaction to comit");
@@ -258,7 +254,7 @@ public class JdbcHelper {
             throw new JdbcException(e);
          } finally {
             JdbcUtil.close(transaction.connection);
-            transactions.remove(current);
+            currentTransaction.remove();
          }
       }
    }
@@ -269,8 +265,7 @@ public class JdbcHelper {
     * connection
     */
    public void rollbackTransaction() {
-      Thread current = Thread.currentThread();
-      Transaction transaction = transactions.get(current);
+      Transaction transaction = currentTransaction.get();
 
       if (transaction == null || transaction.autoCommit) {
          throw new RuntimeException("There isn't a current transaction to rollback");
@@ -281,7 +276,7 @@ public class JdbcHelper {
             throw new JdbcException(e);
          } finally {
             JdbcUtil.close(transaction.connection);
-            transactions.remove(current);
+            currentTransaction.remove();
          }
       }
    }
@@ -303,8 +298,7 @@ public class JdbcHelper {
     * @return Returns the auto_increment key for last inserted row from a mysql database server.
     */
    public long getLastInsertId() {
-      Thread current = Thread.currentThread();
-      Transaction transaction = transactions.get(current);
+      Transaction transaction = currentTransaction.get();
 
       if (transaction == null) {
          throw new RuntimeException("There isn't a current transaction");
@@ -1499,16 +1493,6 @@ public class JdbcHelper {
       } finally {
          JdbcUtil.close(stmt);
          freeConnection(con);
-      }
-   }
-
-   @Override
-   protected void finalize() throws Throwable {
-      super.finalize();
-      for(Transaction t : transactions.values()) {
-         if(t.connection != null && !t.connection.isClosed()) {
-            JdbcUtil.close(t.connection);
-         }
       }
    }
 }

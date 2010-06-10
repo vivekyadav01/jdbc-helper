@@ -6,9 +6,14 @@ JdbcHelper is currently not included in the central maven repository. If you wan
 
 =Installing JdbcHelper to your local maven repository=
 
-First you need to checkout the version 0.3.1 source code:
+First you need to checkout or export the version 0.3.1 source code:
 {{{
 svn checkout http://jdbc-helper.googlecode.com/svn/tags/0.3.1/ jdbc-helper-0.3.1
+}}}
+
+Use export if you don't want .svn directories created:
+{{{
+svn export http://jdbc-helper.googlecode.com/svn/tags/0.3.1/ jdbc-helper-0.3.1
 }}}
 
 Then change to the jdbc-helper-0.3.1 directory and type:

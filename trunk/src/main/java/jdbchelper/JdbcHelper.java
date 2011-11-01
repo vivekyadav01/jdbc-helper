@@ -28,6 +28,8 @@ import java.util.*;
  * @author Erdinc Yilmazel
  */
 public class JdbcHelper {
+   ExceptionLogger logger;
+
    DataSource dataSource;
 
    /**
@@ -37,6 +39,14 @@ public class JdbcHelper {
    public JdbcHelper(DataSource dataSource) {
       this.dataSource = dataSource;
       currentTransaction = new ThreadLocal<Transaction>();
+   }
+
+   /**
+    * Sets the logger that will automatically log any SQLException that is caught
+    * @param logger Logger
+    */
+   public void setLogger(ExceptionLogger logger) {
+       this.logger = logger;
    }
 
    /**
@@ -178,6 +188,9 @@ public class JdbcHelper {
 
          currentTransaction.set(transaction);
       } catch (SQLException e) {
+         if (logger != null) {
+             logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -205,6 +218,9 @@ public class JdbcHelper {
 
          currentTransaction.set(transaction);
       } catch (SQLException e) {
+         if (logger != null) {
+             logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -226,6 +242,9 @@ public class JdbcHelper {
             try {
                transaction.connection.commit();
             } catch (SQLException e) {
+               if (logger != null) {
+                  logger.log(e);
+               }
                throw new JdbcException(e);
             } finally {
                JdbcUtil.close(transaction.connection);
@@ -251,6 +270,9 @@ public class JdbcHelper {
          try {
             transaction.connection.commit();
          } catch (SQLException e) {
+            if (logger != null) {
+               logger.log(e);
+            }
             throw new JdbcException(e);
          } finally {
             JdbcUtil.close(transaction.connection);
@@ -273,6 +295,9 @@ public class JdbcHelper {
          try {
             transaction.connection.rollback();
          } catch (SQLException e) {
+            if (logger != null) {
+               logger.log(e);
+            }
             throw new JdbcException(e);
          } finally {
             JdbcUtil.close(transaction.connection);
@@ -362,6 +387,76 @@ public class JdbcHelper {
 
 
       } catch (SQLException e) {
+         if (logger != null) {
+             logger.log(e, sql);
+         }
+         throw new JdbcException("Error running query:\n" + sql + "\n\nError: " + e.getMessage(), e);
+      } finally {
+         JdbcUtil.close(stmt, result);
+         freeConnection(con);
+      }
+      return null;
+   }
+
+   protected <T> T genericQuery(String sql, QueryCallback<T> callback, StatementPopulator populator) throws NoResultException {
+      Connection con = null;
+      Statement stmt = null;
+      ResultSet result = null;
+
+      try {
+         con = getConnection();
+
+         if (populator == null) {
+            stmt = con.createStatement();
+
+            if (callback.getFetchSize() != 0) {
+               stmt.setFetchSize(callback.getFetchSize());
+            }
+
+            if (callback.getMaxRows() != 0) {
+               stmt.setMaxRows(callback.getMaxRows());
+            }
+
+            if (callback.getTimeout() != 0) {
+               stmt.setQueryTimeout(callback.getTimeout());
+            }
+
+            result = stmt.executeQuery(sql);
+         } else {
+            stmt = con.prepareStatement(sql);
+            populator.populateStatement((PreparedStatement) stmt);
+
+            if (callback.getFetchSize() != 0) {
+               stmt.setFetchSize(callback.getFetchSize());
+            }
+
+            if (callback.getMaxRows() != 0) {
+               stmt.setMaxRows(callback.getMaxRows());
+            }
+
+            if (callback.getTimeout() != 0) {
+               stmt.setQueryTimeout(callback.getTimeout());
+            }
+            result = ((PreparedStatement) stmt).executeQuery();
+         }
+
+         boolean n = result.next();
+         if (!n) {
+            throw new NoResultException();
+         }
+
+         do {
+            T t = callback.process(result);
+            if (t != null) {
+               return t;
+            }
+         } while (result.next());
+
+
+      } catch (SQLException e) {
+         if (logger != null) {
+             logger.log(e, sql);
+         }
          throw new JdbcException("Error running query:\n" + sql + "\n\nError: " + e.getMessage(), e);
       } finally {
          JdbcUtil.close(stmt, result);
@@ -403,6 +498,26 @@ public class JdbcHelper {
       return list;
    }
 
+
+   public <T> ArrayList<T> queryForList(String sql, final BeanCreator<T> beanCreator, StatementPopulator populator) {
+      final ArrayList<T> list = new ArrayList<T>();
+      try {
+         genericQuery(sql, new QueryCallback<T>() {
+            public T process(ResultSet rs) throws SQLException {
+               T t = beanCreator.createBean(rs);
+               if(t instanceof JdbcAware) {
+                  ((JdbcAware) t).setJdbcHelper(JdbcHelper.this);
+               }
+               list.add(t);
+               return null;
+            }
+         }, populator);
+      } catch (NoResultException e) {
+         //
+      }
+      return list;
+   }
+
    /**
     * If only one integer column is selected in the query, you can use this method to get a list of
     * all these integers from the result set as an ArrayList<Integer>
@@ -436,6 +551,22 @@ public class JdbcHelper {
       return list;
    }
 
+   public ArrayList<Integer> queryForIntegerList(String sql, StatementPopulator populator) {
+      final ArrayList<Integer> list = new ArrayList<Integer>();
+      try {
+         genericQuery(sql, new QueryCallback<Integer>() {
+            public Integer process(ResultSet rs) throws SQLException {
+               Integer t = rs.getInt(1);
+               list.add(t);
+               return null;
+            }
+         }, populator);
+      } catch (NoResultException e) {
+         //
+      }
+      return list;
+   }
+
    /**
     * If only one String column is selected in the query, you can use this method to get a list of
     * all these strings from the result set as an ArrayList<String>
@@ -463,6 +594,22 @@ public class JdbcHelper {
                return null;
             }
          }, params);
+      } catch (NoResultException e) {
+         //
+      }
+      return list;
+   }
+
+   public ArrayList<String> queryForStringList(String sql, StatementPopulator populator) {
+      final ArrayList<String> list = new ArrayList<String>();
+      try {
+         genericQuery(sql, new QueryCallback<String>() {
+            public String process(ResultSet rs) throws SQLException {
+               String t = rs.getString(1);
+               list.add(t);
+               return null;
+            }
+         }, populator);
       } catch (NoResultException e) {
          //
       }
@@ -505,6 +652,32 @@ public class JdbcHelper {
                return null;
             }
          }, params);
+      } catch (NoResultException e) {
+         //
+      }
+      return list;
+   }
+
+   public <X, Y> ArrayList<Tuple<X, Y>> queryForList(String sql,
+                                                     final BeanCreator<X> xCreator,
+                                                     final BeanCreator<Y> yCreator,
+                                                     final StatementPopulator populator) {
+      final ArrayList<Tuple<X, Y>> list = new ArrayList<Tuple<X, Y>>();
+      try {
+         genericQuery(sql, new QueryCallback<Tuple<X, Y>>() {
+            public Tuple<X, Y> process(ResultSet rs) throws SQLException {
+               X x = xCreator.createBean(rs);
+               Y y = yCreator.createBean(rs);
+               if(x instanceof JdbcAware) {
+                  ((JdbcAware) x).setJdbcHelper(JdbcHelper.this);
+               }
+               if(y instanceof JdbcAware) {
+                  ((JdbcAware) y).setJdbcHelper(JdbcHelper.this);
+               }
+               list.add(new Tuple<X, Y>(x, y));
+               return null;
+            }
+         }, populator);
       } catch (NoResultException e) {
          //
       }
@@ -554,6 +727,37 @@ public class JdbcHelper {
                return null;
             }
          }, params);
+      } catch (NoResultException e) {
+         //
+      }
+      return list;
+   }
+
+   public <X, Y, Z> ArrayList<Triple<X, Y, Z>> queryForList(String sql,
+                                                     final BeanCreator<X> xCreator,
+                                                     final BeanCreator<Y> yCreator,
+                                                     final BeanCreator<Z> zCreator,
+                                                     final StatementPopulator populator) {
+      final ArrayList<Triple<X, Y, Z>> list = new ArrayList<Triple<X, Y, Z>>();
+      try {
+         genericQuery(sql, new QueryCallback<Triple<X, Y, Z>>() {
+            public Triple<X, Y, Z> process(ResultSet rs) throws SQLException {
+               X x = xCreator.createBean(rs);
+               Y y = yCreator.createBean(rs);
+               Z z = zCreator.createBean(rs);
+               if(x instanceof JdbcAware) {
+                  ((JdbcAware) x).setJdbcHelper(JdbcHelper.this);
+               }
+               if(y instanceof JdbcAware) {
+                  ((JdbcAware) y).setJdbcHelper(JdbcHelper.this);
+               }
+               if(z instanceof JdbcAware) {
+                  ((JdbcAware) z).setJdbcHelper(JdbcHelper.this);
+               }
+               list.add(new Triple<X, Y, Z>(x, y, z));
+               return null;
+            }
+         }, populator);
       } catch (NoResultException e) {
          //
       }
@@ -611,6 +815,42 @@ public class JdbcHelper {
                return null;
             }
          }, params);
+      } catch (NoResultException e) {
+         //
+      }
+      return list;
+   }
+
+   public <X, Y, Z, W> ArrayList<Quadruple<X, Y, Z, W>> queryForList(String sql,
+                                                     final BeanCreator<X> xCreator,
+                                                     final BeanCreator<Y> yCreator,
+                                                     final BeanCreator<Z> zCreator,
+                                                     final BeanCreator<W> wCreator,
+                                                     final StatementPopulator populator) {
+      final ArrayList<Quadruple<X, Y, Z, W>> list = new ArrayList<Quadruple<X, Y, Z, W>>();
+      try {
+         genericQuery(sql, new QueryCallback<Quadruple<X, Y, Z, W>>() {
+            public Quadruple<X, Y, Z, W> process(ResultSet rs) throws SQLException {
+               X x = xCreator.createBean(rs);
+               Y y = yCreator.createBean(rs);
+               Z z = zCreator.createBean(rs);
+               W w = wCreator.createBean(rs);
+               if(x instanceof JdbcAware) {
+                  ((JdbcAware) x).setJdbcHelper(JdbcHelper.this);
+               }
+               if(y instanceof JdbcAware) {
+                  ((JdbcAware) y).setJdbcHelper(JdbcHelper.this);
+               }
+               if(z instanceof JdbcAware) {
+                  ((JdbcAware) z).setJdbcHelper(JdbcHelper.this);
+               }
+               if(w instanceof JdbcAware) {
+                  ((JdbcAware) w).setJdbcHelper(JdbcHelper.this);
+               }
+               list.add(new Quadruple<X, Y, Z, W>(x, y, z, w));
+               return null;
+            }
+         }, populator);
       } catch (NoResultException e) {
          //
       }
@@ -681,6 +921,47 @@ public class JdbcHelper {
       return list;
    }
 
+   public <X, Y, Z, W, Q> ArrayList<Pentuple<X, Y, Z, W, Q>> queryForList(String sql,
+                                                     final BeanCreator<X> xCreator,
+                                                     final BeanCreator<Y> yCreator,
+                                                     final BeanCreator<Z> zCreator,
+                                                     final BeanCreator<W> wCreator,
+                                                     final BeanCreator<Q> qCreator,
+                                                     final StatementPopulator populator) {
+      final ArrayList<Pentuple<X, Y, Z, W, Q>> list = new ArrayList<Pentuple<X, Y, Z, W, Q>>();
+      try {
+         genericQuery(sql, new QueryCallback<Pentuple<X, Y, Z, W, Q>>() {
+            public Pentuple<X, Y, Z, W, Q> process(ResultSet rs) throws SQLException {
+               X x = xCreator.createBean(rs);
+               Y y = yCreator.createBean(rs);
+               Z z = zCreator.createBean(rs);
+               W w = wCreator.createBean(rs);
+               Q q = qCreator.createBean(rs);
+               if(x instanceof JdbcAware) {
+                  ((JdbcAware) x).setJdbcHelper(JdbcHelper.this);
+               }
+               if(y instanceof JdbcAware) {
+                  ((JdbcAware) y).setJdbcHelper(JdbcHelper.this);
+               }
+               if(z instanceof JdbcAware) {
+                  ((JdbcAware) z).setJdbcHelper(JdbcHelper.this);
+               }
+               if(w instanceof JdbcAware) {
+                  ((JdbcAware) w).setJdbcHelper(JdbcHelper.this);
+               }
+               if(q instanceof JdbcAware) {
+                  ((JdbcAware) q).setJdbcHelper(JdbcHelper.this);
+               }
+               list.add(new Pentuple<X, Y, Z, W, Q>(x, y, z, w, q));
+               return null;
+            }
+         }, populator);
+      } catch (NoResultException e) {
+         //
+      }
+      return list;
+   }
+
    /**
     * If two columns are selected in a query, you can retrieve the result set as a map of
     * key => value pairs using this method.
@@ -705,6 +986,24 @@ public class JdbcHelper {
                return null;
             }
          }, params);
+      } catch (NoResultException e) {
+         //
+      }
+
+      return map;
+   }
+
+   public <K, V> SortedMap<K, V> queryForMap(String sql, final ResultSetMapper<K, V> resultSetMapper, final StatementPopulator populator) {
+      final SortedMap<K, V> map = new TreeMap<K, V>();
+      try {
+         genericQuery(sql, new QueryCallback<AbstractMap.SimpleEntry<K, V>>() {
+            @Override
+            public AbstractMap.SimpleEntry<K, V> process(ResultSet rs) throws SQLException {
+               AbstractMap.SimpleEntry<K, V> entry = resultSetMapper.mapRow(rs);
+               map.put(entry.getKey(), entry.getValue());
+               return null;
+            }
+         }, populator);
       } catch (NoResultException e) {
          //
       }
@@ -741,6 +1040,22 @@ public class JdbcHelper {
       }
    }
 
+   public <T> T queryForObject(String sql, final BeanCreator<T> beanCreator, final StatementPopulator populator) {
+      try {
+         return genericQuery(sql, new QueryCallback<T>() {
+            public T process(ResultSet rs) throws SQLException {
+               T t = beanCreator.createBean(rs);
+               if(t instanceof JdbcAware) {
+                  ((JdbcAware) t).setJdbcHelper(JdbcHelper.this);
+               }
+               return t;
+            }
+         }, populator);
+      } catch (NoResultException e) {
+         return null;
+      }
+   }
+
    public <X, Y> Tuple<X, Y> queryForTuple(String sql,
                                            final BeanCreator<X> xCreator,
                                            final BeanCreator<Y> yCreator,
@@ -759,6 +1074,29 @@ public class JdbcHelper {
                return new Tuple<X, Y>(x, y);
             }
          }, params);
+      } catch (NoResultException e) {
+         return null;
+      }
+   }
+
+   public <X, Y> Tuple<X, Y> queryForTuple(String sql,
+                                           final BeanCreator<X> xCreator,
+                                           final BeanCreator<Y> yCreator,
+                                           final StatementPopulator populator) {
+      try {
+         return genericQuery(sql, new QueryCallback<Tuple<X, Y>>() {
+            public Tuple<X, Y> process(ResultSet rs) throws SQLException {
+               X x = xCreator.createBean(rs);
+               Y y = yCreator.createBean(rs);
+               if(x instanceof JdbcAware) {
+                  ((JdbcAware) x).setJdbcHelper(JdbcHelper.this);
+               }
+               if(y instanceof JdbcAware) {
+                  ((JdbcAware) y).setJdbcHelper(JdbcHelper.this);
+               }
+               return new Tuple<X, Y>(x, y);
+            }
+         }, populator);
       } catch (NoResultException e) {
          return null;
       }
@@ -793,6 +1131,35 @@ public class JdbcHelper {
       }
    }
 
+   public <X, Y, Z> Triple<X, Y, Z> queryForTriple(String sql,
+                                           final BeanCreator<X> xCreator,
+                                           final BeanCreator<Y> yCreator,
+                                           final BeanCreator<Z> zCreator,
+                                           final StatementPopulator populator) {
+      try {
+         return genericQuery(sql, new QueryCallback<Triple<X, Y, Z>>() {
+            public Triple<X, Y, Z> process(ResultSet rs) throws SQLException {
+               X x = xCreator.createBean(rs);
+               Y y = yCreator.createBean(rs);
+               Z z = zCreator.createBean(rs);
+               if(x instanceof JdbcAware) {
+                  ((JdbcAware) x).setJdbcHelper(JdbcHelper.this);
+               }
+               if(y instanceof JdbcAware) {
+                  ((JdbcAware) y).setJdbcHelper(JdbcHelper.this);
+               }
+               if(z instanceof JdbcAware) {
+                  ((JdbcAware) z).setJdbcHelper(JdbcHelper.this);
+               }
+
+               return new Triple<X, Y, Z>(x, y, z);
+            }
+         }, populator);
+      } catch (NoResultException e) {
+         return null;
+      }
+   }
+
    public <X, Y, Z, W> Quadruple<X, Y, Z, W> queryForQuadruple(String sql,
                                            final BeanCreator<X> xCreator,
                                            final BeanCreator<Y> yCreator,
@@ -822,6 +1189,40 @@ public class JdbcHelper {
                return new Quadruple<X, Y, Z, W>(x, y, z, w);
             }
          }, params);
+      } catch (NoResultException e) {
+         return null;
+      }
+   }
+
+   public <X, Y, Z, W> Quadruple<X, Y, Z, W> queryForQuadruple(String sql,
+                                           final BeanCreator<X> xCreator,
+                                           final BeanCreator<Y> yCreator,
+                                           final BeanCreator<Z> zCreator,
+                                           final BeanCreator<W> wCreator,
+                                           final StatementPopulator populator) {
+      try {
+         return genericQuery(sql, new QueryCallback<Quadruple<X, Y, Z, W>>() {
+            public Quadruple<X, Y, Z, W> process(ResultSet rs) throws SQLException {
+               X x = xCreator.createBean(rs);
+               Y y = yCreator.createBean(rs);
+               Z z = zCreator.createBean(rs);
+               W w = wCreator.createBean(rs);
+               if(x instanceof JdbcAware) {
+                  ((JdbcAware) x).setJdbcHelper(JdbcHelper.this);
+               }
+               if(y instanceof JdbcAware) {
+                  ((JdbcAware) y).setJdbcHelper(JdbcHelper.this);
+               }
+               if(z instanceof JdbcAware) {
+                  ((JdbcAware) z).setJdbcHelper(JdbcHelper.this);
+               }
+               if(w instanceof JdbcAware) {
+                  ((JdbcAware) w).setJdbcHelper(JdbcHelper.this);
+               }
+
+               return new Quadruple<X, Y, Z, W>(x, y, z, w);
+            }
+         }, populator);
       } catch (NoResultException e) {
          return null;
       }
@@ -866,6 +1267,45 @@ public class JdbcHelper {
       }
    }
 
+   public <X, Y, Z, W, Q> Pentuple<X, Y, Z, W, Q> queryForPentuple(String sql,
+                                           final BeanCreator<X> xCreator,
+                                           final BeanCreator<Y> yCreator,
+                                           final BeanCreator<Z> zCreator,
+                                           final BeanCreator<W> wCreator,
+                                           final BeanCreator<Q> qCreator,
+                                           final StatementPopulator populator) {
+      try {
+         return genericQuery(sql, new QueryCallback<Pentuple<X, Y, Z, W, Q>>() {
+            public Pentuple<X, Y, Z, W, Q> process(ResultSet rs) throws SQLException {
+               X x = xCreator.createBean(rs);
+               Y y = yCreator.createBean(rs);
+               Z z = zCreator.createBean(rs);
+               W w = wCreator.createBean(rs);
+               Q q = qCreator.createBean(rs);
+               if(x instanceof JdbcAware) {
+                  ((JdbcAware) x).setJdbcHelper(JdbcHelper.this);
+               }
+               if(y instanceof JdbcAware) {
+                  ((JdbcAware) y).setJdbcHelper(JdbcHelper.this);
+               }
+               if(z instanceof JdbcAware) {
+                  ((JdbcAware) z).setJdbcHelper(JdbcHelper.this);
+               }
+               if(w instanceof JdbcAware) {
+                  ((JdbcAware) w).setJdbcHelper(JdbcHelper.this);
+               }
+               if(q instanceof JdbcAware) {
+                  ((JdbcAware) q).setJdbcHelper(JdbcHelper.this);
+               }
+
+               return new Pentuple<X, Y, Z, W, Q>(x, y, z, w, q);
+            }
+         }, populator);
+      } catch (NoResultException e) {
+         return null;
+      }
+   }
+
    /**
     * To select a single integer value from the database this method can be used.
     *
@@ -889,6 +1329,15 @@ public class JdbcHelper {
             return rs.getInt(1);
          }
       }, params);
+   }
+
+
+   public int queryForInt(String sql, final StatementPopulator populator) throws NoResultException {
+      return genericQuery(sql, new QueryCallback<Integer>() {
+         public Integer process(ResultSet rs) throws SQLException {
+            return rs.getInt(1);
+         }
+      }, populator);
    }
 
 
@@ -917,6 +1366,14 @@ public class JdbcHelper {
       }, params);
    }
 
+   public String queryForString(String sql, final StatementPopulator populator) throws NoResultException {
+      return genericQuery(sql, new QueryCallback<String>() {
+         public String process(ResultSet rs) throws SQLException {
+            return rs.getString(1);
+         }
+      }, populator);
+   }
+
 
    /**
     * To select a single long value from the database this method can be used.
@@ -941,6 +1398,14 @@ public class JdbcHelper {
             return rs.getLong(1);
          }
       }, params);
+   }
+
+   public long queryForLong(String sql, final StatementPopulator populator) throws NoResultException {
+      return genericQuery(sql, new QueryCallback<Long>() {
+         public Long process(ResultSet rs) throws SQLException {
+            return rs.getLong(1);
+         }
+      }, populator);
    }
 
 
@@ -969,6 +1434,14 @@ public class JdbcHelper {
       }, params);
    }
 
+   public double queryForDouble(String sql, final StatementPopulator populator) throws NoResultException {
+      return genericQuery(sql, new QueryCallback<Double>() {
+         public Double process(ResultSet rs) throws SQLException {
+            return rs.getDouble(1);
+         }
+      }, populator);
+   }
+
 
    /**
     * To select a single float value from the database this method can be used.
@@ -993,6 +1466,14 @@ public class JdbcHelper {
             return rs.getFloat(1);
          }
       }, params);
+   }
+
+   public float queryForFloat(String sql, final StatementPopulator populator) throws NoResultException {
+      return genericQuery(sql, new QueryCallback<Float>() {
+         public Float process(ResultSet rs) throws SQLException {
+            return rs.getFloat(1);
+         }
+      }, populator);
    }
 
    /**
@@ -1020,6 +1501,14 @@ public class JdbcHelper {
       }, params);
    }
 
+   public Timestamp queryForTimestamp(String sql, final StatementPopulator populator) throws NoResultException {
+      return genericQuery(sql, new QueryCallback<Timestamp>() {
+         public Timestamp process(ResultSet rs) throws SQLException {
+            return rs.getTimestamp(1);
+         }
+      }, populator);
+   }
+
 
    /**
     * To select a single BigDecimal value from the database this method can be used.
@@ -1041,6 +1530,14 @@ public class JdbcHelper {
       }, params);
    }
 
+   public BigDecimal queryForBigDecimal(String sql, final StatementPopulator populator) throws NoResultException {
+      return genericQuery(sql, new QueryCallback<BigDecimal>() {
+         public BigDecimal process(ResultSet rs) throws SQLException {
+            return rs.getBigDecimal(1);
+         }
+      }, populator);
+   }
+
 
    /**
     * To select a single byte[] value from the database this method can be used.
@@ -1060,6 +1557,14 @@ public class JdbcHelper {
             return rs.getBytes(1);
          }
       }, params);
+   }
+
+   public byte[] queryForBytes(String sql, final StatementPopulator populator) throws NoResultException {
+      return genericQuery(sql, new QueryCallback<byte[]>() {
+         public byte[] process(ResultSet rs) throws SQLException {
+            return rs.getBytes(1);
+         }
+      }, populator);
    }
 
    /**
@@ -1087,6 +1592,14 @@ public class JdbcHelper {
       }, params);
    }
 
+   public boolean queryForBoolean(String sql, final StatementPopulator populator) throws NoResultException {
+      return genericQuery(sql, new QueryCallback<Boolean>() {
+         public Boolean process(ResultSet rs) throws SQLException {
+            return rs.getBoolean(1);
+         }
+      }, populator);
+   }
+
    /**
     * To select a single value from the database as an Ascii Stream this method can be used.
     *
@@ -1105,6 +1618,14 @@ public class JdbcHelper {
             return rs.getAsciiStream(1);
          }
       }, params);
+   }
+
+   public InputStream queryForAsciiStream(String sql, final StatementPopulator populator) throws NoResultException {
+      return genericQuery(sql, new QueryCallback<InputStream>() {
+         public InputStream process(ResultSet rs) throws SQLException {
+            return rs.getAsciiStream(1);
+         }
+      }, populator);
    }
 
    /**
@@ -1127,6 +1648,14 @@ public class JdbcHelper {
       }, params);
    }
 
+   public InputStream queryForBinaryStream(String sql, final StatementPopulator populator) throws NoResultException {
+      return genericQuery(sql, new QueryCallback<InputStream>() {
+         public InputStream process(ResultSet rs) throws SQLException {
+            return rs.getBinaryStream(1);
+         }
+      }, populator);
+   }
+
    /**
     * To select a single value from the database as an Character Stream (Reader) this method can be used.
     *
@@ -1145,6 +1674,14 @@ public class JdbcHelper {
             return rs.getCharacterStream(1);
          }
       }, params);
+   }
+
+   public Reader queryForCharacterStream(String sql, final StatementPopulator populator) throws NoResultException {
+      return genericQuery(sql, new QueryCallback<Reader>() {
+         public Reader process(ResultSet rs) throws SQLException {
+            return rs.getCharacterStream(1);
+         }
+      }, populator);
    }
 
 
@@ -1189,6 +1726,22 @@ public class JdbcHelper {
                return null;
             }
          }, params);
+         return true;
+      } catch (NoResultException e) {
+         return false;
+      }
+   }
+
+   @SuppressWarnings("unchecked")
+   public boolean query(String sql, final ResultSetHandler handler, final StatementPopulator populator) {
+      try {
+         genericQuery(sql, new ParameteredQueryCallback(handler) {
+            public Object process(ResultSet rs) throws SQLException {
+               this.handler.rowNo++;
+               this.handler.processRow(rs);
+               return null;
+            }
+         }, populator);
          return true;
       } catch (NoResultException e) {
          return false;
@@ -1272,6 +1825,9 @@ public class JdbcHelper {
             return ((PreparedStatement) stmt).executeUpdate();
          }
       } catch (SQLException e) {
+         if (logger != null) {
+             logger.log(e, sql);
+         }
          throw new JdbcException("Error executing query:\n" + sql + "\n\nError: " + e.getMessage(), e);
       } finally {
          JdbcUtil.close(stmt);
@@ -1320,6 +1876,9 @@ public class JdbcHelper {
             return result;
          }
       } catch (SQLException e) {
+         if (logger != null) {
+             logger.log(e, sql);
+         }
          throw new JdbcException("Error executing query:\n" + sql + "\n\nError: " + e.getMessage(), e);
       } finally {
          JdbcUtil.close(stmt);
@@ -1328,7 +1887,7 @@ public class JdbcHelper {
    }
 
    /**
-    * When inserting or updating a record for a java bean, instead of giving a seperate statement parameter
+    * When inserting or updating a record for a java bean, instead of giving a separate statement parameter
     * for every bean property may be cumbersome. You may write a statement mapper for that bean type and use that
     * StatementMapper everytime you execute a similar statement.
     *
@@ -1372,6 +1931,36 @@ public class JdbcHelper {
          mapper.mapStatement(stmt, bean);
          return stmt.executeUpdate();
       } catch (SQLException e) {
+         if (logger != null) {
+             logger.log(e, sql);
+         }
+         throw new JdbcException("Error executing query:\n" + sql + "\n\nError: " + e.getMessage(), e);
+      } finally {
+         JdbcUtil.close(stmt);
+         freeConnection(con);
+      }
+   }
+
+    /**
+     * This method can be used if you want explicit control on the arguments that you set on a
+     * prepared statement instead of using var args.
+     * @param sql The sql statement
+     * @param populator The object that will populate the prepared statement parameters
+     * @return Returns the number of affected rows
+     */
+   public int execute(String sql, StatementPopulator populator) {
+      Connection con = null;
+      PreparedStatement stmt = null;
+
+      try {
+         con = getConnection();
+         stmt = con.prepareStatement(sql);
+         populator.populateStatement(stmt);
+         return stmt.executeUpdate();
+      } catch (SQLException e) {
+         if (logger != null) {
+             logger.log(e, sql);
+         }
          throw new JdbcException("Error executing query:\n" + sql + "\n\nError: " + e.getMessage(), e);
       } finally {
          JdbcUtil.close(stmt);
@@ -1405,6 +1994,9 @@ public class JdbcHelper {
          con.setCatalog(currentCatalog);
          return result;
       } catch (SQLException e) {
+         if (logger != null) {
+             logger.log(e, sql);
+         }
          throw new JdbcException("Error executing query:\n" + sql + "\n\nError: " + e.getMessage(), e);
       } finally {
          JdbcUtil.close(stmt);
@@ -1415,7 +2007,7 @@ public class JdbcHelper {
    /**
     * This is the same with {@link #execute(String, Object...)} method that doesn't return anything
     * @param sql The sql statement
-    * @param params Optional parameteres that will be used as prepared statement parameters
+    * @param params Optional parameters that will be used as prepared statement parameters
     */
    public void run(String sql, Object... params) {
       Connection con = null;
@@ -1432,6 +2024,9 @@ public class JdbcHelper {
             ((PreparedStatement) stmt).execute();
          }
       } catch (SQLException e) {
+         if (logger != null) {
+             logger.log(e, sql);
+         }
          throw new JdbcException("Error executing query:\n" + sql + "\n\nError: " + e.getMessage(), e);
       } finally {
          JdbcUtil.close(stmt);
@@ -1489,6 +2084,9 @@ public class JdbcHelper {
          }
          return stmt.executeBatch();
       } catch (SQLException e) {
+         if (logger != null) {
+             logger.log(e, sql);
+         }
          throw new JdbcException("Error executing query:\n" + sql + "\n\nError: " + e.getMessage(), e);
       } finally {
          JdbcUtil.close(stmt);

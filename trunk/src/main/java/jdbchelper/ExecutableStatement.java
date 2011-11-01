@@ -19,6 +19,9 @@ public class ExecutableStatement {
          con = jdbc.getConnection();
          stmt = con.prepareStatement(sql);
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e, sql);
+         }
          throw new JdbcException("Error running query:\n" + sql + "\n\nError: " + e.getMessage(), e);
       }
    }
@@ -27,6 +30,9 @@ public class ExecutableStatement {
       try {
          stmt.addBatch();
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -35,6 +41,9 @@ public class ExecutableStatement {
       try {
          return stmt.executeUpdate();
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -43,6 +52,9 @@ public class ExecutableStatement {
       try {
          return stmt.executeBatch();
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       } finally {
          JdbcUtil.close(stmt);
@@ -54,6 +66,9 @@ public class ExecutableStatement {
       try {
          jdbc.fillStatement(stmt, params);
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -62,6 +77,9 @@ public class ExecutableStatement {
       try {
          stmt.setNull(parameterIndex, sqlType);
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -70,6 +88,9 @@ public class ExecutableStatement {
       try {
          stmt.setBoolean(parameterIndex, x);
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -78,6 +99,9 @@ public class ExecutableStatement {
       try {
          stmt.setByte(parameterIndex, x);
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -86,6 +110,9 @@ public class ExecutableStatement {
       try {
          stmt.setShort(parameterIndex, x);
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -94,6 +121,9 @@ public class ExecutableStatement {
       try {
          stmt.setInt(parameterIndex, x);
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -102,6 +132,9 @@ public class ExecutableStatement {
       try {
          stmt.setLong(parameterIndex, x);
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -110,6 +143,9 @@ public class ExecutableStatement {
       try {
          stmt.setFloat(parameterIndex, x);
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -118,6 +154,9 @@ public class ExecutableStatement {
       try {
          stmt.setDouble(parameterIndex, x);
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -126,6 +165,9 @@ public class ExecutableStatement {
       try {
          stmt.setBigDecimal(parameterIndex, x);
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -134,6 +176,9 @@ public class ExecutableStatement {
       try {
          stmt.setString(parameterIndex, x);
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -142,6 +187,9 @@ public class ExecutableStatement {
       try {
          stmt.setBytes(parameterIndex, x);
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -150,6 +198,9 @@ public class ExecutableStatement {
       try {
          stmt.setDate(parameterIndex, x);
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -158,6 +209,9 @@ public class ExecutableStatement {
       try {
          stmt.setTime(parameterIndex, x);
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -166,6 +220,9 @@ public class ExecutableStatement {
       try {
          stmt.setTimestamp(parameterIndex, x);
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -174,6 +231,9 @@ public class ExecutableStatement {
       try {
          stmt.setAsciiStream(parameterIndex, x, length);
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -183,6 +243,9 @@ public class ExecutableStatement {
       try {
          stmt.setBinaryStream(parameterIndex, x, length);
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -191,6 +254,9 @@ public class ExecutableStatement {
       try {
          stmt.setBlob(parameterIndex, x);
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -199,6 +265,9 @@ public class ExecutableStatement {
       try {
          stmt.setClob(parameterIndex, x);
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -207,6 +276,9 @@ public class ExecutableStatement {
       try {
          stmt.setArray(parameterIndex, x);
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -215,6 +287,9 @@ public class ExecutableStatement {
       try {
          stmt.clearParameters();
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -223,6 +298,9 @@ public class ExecutableStatement {
       try {
          stmt.setObject(parameterIndex, x, targetSqlType);
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -231,6 +309,9 @@ public class ExecutableStatement {
       try {
          stmt.setObject(parameterIndex, x);
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }

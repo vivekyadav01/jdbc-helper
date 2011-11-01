@@ -33,6 +33,9 @@ public class QueryResult {
             stmt = jdbc.fillStatement(con.prepareStatement(sql), params);
          }
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e, sql);
+         }
          throw new JdbcException("Error running query:\n" + sql + "\n\nError: " + e.getMessage(), e);
       }
    }
@@ -45,6 +48,9 @@ public class QueryResult {
       try {
          stmt.setFetchSize(rows);
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -53,6 +59,9 @@ public class QueryResult {
       try {
          stmt.setMaxRows(rows);
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -61,6 +70,9 @@ public class QueryResult {
       try {
          stmt.setQueryTimeout(t);
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -76,6 +88,9 @@ public class QueryResult {
          queried = true;
 
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException("Error running query:\n" + sql + "\n\nError: " + e.getMessage(), e);
       }
    }
@@ -92,6 +107,9 @@ public class QueryResult {
 
          return next;
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -108,6 +126,9 @@ public class QueryResult {
       try {
          return result.isBeforeFirst();
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -116,6 +137,9 @@ public class QueryResult {
       try {
          return result.isAfterLast();
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -124,6 +148,9 @@ public class QueryResult {
       try {
          return result.isFirst();
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -132,6 +159,9 @@ public class QueryResult {
       try {
          return result.isLast();
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -140,6 +170,9 @@ public class QueryResult {
       try {
          result.beforeFirst();
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -148,6 +181,9 @@ public class QueryResult {
       try {
          result.afterLast();
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -156,6 +192,9 @@ public class QueryResult {
       try {
          return result.first();
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -172,6 +211,9 @@ public class QueryResult {
       try {
          return result.getRow();
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -180,6 +222,9 @@ public class QueryResult {
       try {
          return result.absolute(row);
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -188,6 +233,9 @@ public class QueryResult {
       try {
          return result.relative(rows);
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -196,6 +244,9 @@ public class QueryResult {
       try {
          return result.previous();
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -204,6 +255,9 @@ public class QueryResult {
       try {
          return result.getString(columnIndex);
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -212,6 +266,9 @@ public class QueryResult {
       try {
          return result.getBoolean(columnIndex);
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -220,6 +277,9 @@ public class QueryResult {
       try {
          return result.getByte(columnIndex);
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -228,6 +288,9 @@ public class QueryResult {
       try {
          return result.getShort(columnIndex);
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -236,6 +299,9 @@ public class QueryResult {
       try {
          return result.getInt(columnIndex);
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -244,6 +310,9 @@ public class QueryResult {
       try {
          return result.getLong(columnIndex);
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -252,6 +321,9 @@ public class QueryResult {
       try {
          return result.getFloat(columnIndex);
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -260,6 +332,9 @@ public class QueryResult {
       try {
          return result.getDouble(columnIndex);
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -268,6 +343,9 @@ public class QueryResult {
       try {
          return result.getBigDecimal(columnIndex);
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -276,6 +354,9 @@ public class QueryResult {
       try {
          return result.getBytes(columnIndex);
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -284,6 +365,9 @@ public class QueryResult {
       try {
          return result.getDate(columnIndex);
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -300,6 +384,9 @@ public class QueryResult {
       try {
          return result.getTimestamp(columnIndex);
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -308,6 +395,9 @@ public class QueryResult {
       try {
          return result.getAsciiStream(columnIndex);
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -317,6 +407,9 @@ public class QueryResult {
       try {
          return result.getBinaryStream(columnIndex);
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -325,6 +418,9 @@ public class QueryResult {
       try {
          return result.getString(columnLabel);
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -333,6 +429,9 @@ public class QueryResult {
       try {
          return result.getBoolean(columnLabel);
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -341,6 +440,9 @@ public class QueryResult {
       try {
          return result.getByte(columnLabel);
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -349,6 +451,9 @@ public class QueryResult {
       try {
          return result.getShort(columnLabel);
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -357,6 +462,9 @@ public class QueryResult {
       try {
          return result.getInt(columnLabel);
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -365,6 +473,9 @@ public class QueryResult {
       try {
          return result.getLong(columnLabel);
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -373,6 +484,9 @@ public class QueryResult {
       try {
          return result.getFloat(columnLabel);
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -389,6 +503,9 @@ public class QueryResult {
       try {
          return result.getBigDecimal(columnLabel);
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -397,6 +514,9 @@ public class QueryResult {
       try {
          return result.getBytes(columnLabel);
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -405,6 +525,9 @@ public class QueryResult {
       try {
          return result.getDate(columnLabel);
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -413,6 +536,9 @@ public class QueryResult {
       try {
          return result.getTime(columnLabel);
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -421,6 +547,9 @@ public class QueryResult {
       try {
          return result.getTimestamp(columnLabel);
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -429,6 +558,9 @@ public class QueryResult {
       try {
          return result.getAsciiStream(columnLabel);
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
@@ -437,6 +569,9 @@ public class QueryResult {
       try {
          return result.getBinaryStream(columnLabel);
       } catch (SQLException e) {
+         if (jdbc.logger != null) {
+             jdbc.logger.log(e);
+         }
          throw new JdbcException(e);
       }
    }
